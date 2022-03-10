@@ -13,13 +13,17 @@ require_once(dirname(__FILE__).'/phpqrcode.php');
 class action_plugin_twofactorgoogleauth extends Provider
 {
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function isConfigured()
     {
         return $this->settings->get('secret') &&
             $this->settings->get('verified');
+    }
+
+    /** @inheritdoc */
+    public function getLabel()
+    {
+        return 'Google Authenticator (TOTP)';
     }
 
     /**
