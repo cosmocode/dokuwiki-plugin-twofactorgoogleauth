@@ -2,6 +2,7 @@
 
 use dokuwiki\Form\Form;
 use dokuwiki\plugin\twofactor\Provider;
+use dokuwiki\plugin\twofactorgoogleauth\QRCode;
 
 /**
  * Twofactor Provider for TOTP aka Google Authenticator
@@ -27,21 +28,17 @@ class action_plugin_twofactorgoogleauth extends Provider
         global $conf;
         global $USERINFO;
 
-        if (!$this->settings->get('verified')) {
-            // Show the QR code so the user can add other devices.
-            $secret = $this->getSecret();
-            $name = $USERINFO['name'] . '@' . $conf['title'];
-            $url = 'otpauth://totp/' . rawurlencode($name) . '?secret=' . $secret;
-            $svg = \dokuwiki\plugin\twofactorgoogleauth\QRCode::svg($url);
+        $secret = $this->getSecret();
+        $name = $USERINFO['name'] . '@' . $conf['title'];
+        $url = 'otpauth://totp/' . rawurlencode($name) . '?secret=' . $secret;
+        $svg = QRCode::svg($url);
 
-            $form->addHTML('<figure><figcaption>' . $this->getLang('directions') . '</figcaption>');
-            $form->addHTML($svg);
-            $form->addHTML('</figure>');
-            $form->addHTML('<p>' . $this->getLang('verifynotice') . '</p>');
-            $form->addTextInput('googleauth_verify', $this->getLang('verifymodule'));
-        } else {
-            $form->addHTML('<p>' . $this->getLang('passedsetup') . '</p>');
-        }
+        $form->addHTML('<figure><figcaption>' . $this->getLang('directions') . '</figcaption>');
+        $form->addHTML($svg);
+        $form->addHTML('</figure>');
+        $form->addHTML('<p>' . $this->getLang('verifynotice') . '</p>');
+        $form->addTextInput('googleauth_verify', $this->getLang('verifymodule'));
+
         return $form;
     }
 
@@ -50,27 +47,17 @@ class action_plugin_twofactorgoogleauth extends Provider
     {
         global $INPUT;
 
+        // create secret when setup is initialized
+        if ($INPUT->bool('init')) {
+            $this->initSecret();
+        }
+
         $otp = $INPUT->str('googleauth_verify');
         if (!$otp) return;
 
         if ($this->checkCode($otp)) {
             $this->settings->set('verified', true);
         }
-    }
-
-    /**
-     * @inheritdoc
-     * auto generates a new secret if none has been saved
-     */
-    public function getSecret()
-    {
-        $secret = $this->settings->get('secret');
-        if (!$secret) {
-            $ga = new dokuwiki\plugin\twofactor\GoogleAuthenticator();
-            $secret = $ga->createSecret();
-            $this->settings->set('secret', $secret);
-        }
-        return $secret;
     }
 
     /**
