@@ -13,14 +13,6 @@ Please refer to http://www.dokuwiki.org/plugins for additional info
 on how to install plugins in DokuWiki.
 
 ----
-A big thanks goes out to Dan Popp for the work on his Google 2FA 
-pluginauthgoogle2fa Plugin- it provided me with the idea, libraries, and a 
-code template to get this project started.
-
-I make use of the PHP Gangsta Google Authenticator class by 
-Michael Kliewe (BSD) and the PHP QR Code library (LGPL3). My thanks to them 
-for enabling this plugin to be a reality.
-
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

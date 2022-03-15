@@ -13,8 +13,7 @@ class action_plugin_twofactorgoogleauth extends Provider
     /** @inheritDoc */
     public function isConfigured()
     {
-        return $this->settings->get('secret') &&
-            $this->settings->get('verified');
+        return $this->settings->get('verified');
     }
 
     /** @inheritdoc */
@@ -23,9 +22,7 @@ class action_plugin_twofactorgoogleauth extends Provider
         return 'Google Authenticator (TOTP)';
     }
 
-    /**
-     * This user will need to interact with the QR code in order to configure GA.
-     */
+    /** @inheritdoc */
     public function renderProfileForm(Form $form)
     {
         global $conf;
@@ -34,51 +31,37 @@ class action_plugin_twofactorgoogleauth extends Provider
         if (!$this->settings->get('verified')) {
             // Show the QR code so the user can add other devices.
             $secret = $this->getSecret();
-            $this->settings->set('secret', $secret);
-            $data = $this->generateQRCodeData($USERINFO['name'].'@'.$conf['title'], $secret);
+            $name = $USERINFO['name'].'@'.$conf['title'];
+            $url = 'otpauth://totp/'.rawurlencode($name).'?secret='.$secret;
+            $svg = \dokuwiki\plugin\twofactorgoogleauth\QRCode::svg($url);
+
             $form->addHTML('<figure><figcaption>'.$this->getLang('directions').'</figcaption>');
-            $form->addHTML('<img src="'.$data.'" alt="'.$this->getLang('directions').'" />');
+            $form->addHTML($svg);
             $form->addHTML('</figure>');
-            $form->addHTML('<span>'.$this->getLang('verifynotice').'</span><br>');
-            $form->addTextInput(
-                'googleauth_verify',
-                $this->getLang('verifymodule')
-            );
+            $form->addHTML('<p>'.$this->getLang('verifynotice').'</p>');
+            $form->addTextInput('googleauth_verify', $this->getLang('verifymodule'));
         } else {
-            $form->addHTML('<span>' . $this->getLang('passedsetup') . '</span>');
+            $form->addHTML('<p>' . $this->getLang('passedsetup') . '</p>');
         }
         return $form;
     }
 
-    /**
-     * Process any user configuration.
-     */
+    /** @inheritdoc */
     public function handleProfileForm()
     {
         global $INPUT;
 
         $otp = $INPUT->str('googleauth_verify');
-        if ($otp && $this->processLogin($otp)) {
+        if(!$otp) return;
+
+        if($this->checkCode($otp)) {
             $this->settings->set('verified', true);
         }
     }
 
     /**
-     *  This module authenticates against a time-based code.
-     */
-    public function processLogin($code)
-    {
-        $ga = new dokuwiki\plugin\twofactor\GoogleAuthenticator();
-        $twofactor = plugin_load('action', 'twofactor_profile');
-        $expiry = $twofactor->getConf('generatorexpiry');
-        $secret = $this->settings->get('secret');
-        return $ga->verifyCode($secret, $code, $expiry);
-    }
-
-    /**
-     * If there is
-     * @return string
-     * @throws Exception
+     * @inheritdoc
+     * auto generates a new secret if none has been saved
      */
     public function getSecret()
     {
