@@ -1,11 +1,10 @@
 <?php
 
-use dokuwiki\plugin\twofactor\Provider;
 use dokuwiki\Form\Form;
+use dokuwiki\plugin\twofactor\Provider;
 
 /**
- * If we turn this into a helper class, it can have its own language and settings files.
- * Until then, we can only use per-user settings.
+ * Twofactor Provider for TOTP aka Google Authenticator
  */
 class action_plugin_twofactorgoogleauth extends Provider
 {
@@ -31,14 +30,14 @@ class action_plugin_twofactorgoogleauth extends Provider
         if (!$this->settings->get('verified')) {
             // Show the QR code so the user can add other devices.
             $secret = $this->getSecret();
-            $name = $USERINFO['name'].'@'.$conf['title'];
-            $url = 'otpauth://totp/'.rawurlencode($name).'?secret='.$secret;
+            $name = $USERINFO['name'] . '@' . $conf['title'];
+            $url = 'otpauth://totp/' . rawurlencode($name) . '?secret=' . $secret;
             $svg = \dokuwiki\plugin\twofactorgoogleauth\QRCode::svg($url);
 
-            $form->addHTML('<figure><figcaption>'.$this->getLang('directions').'</figcaption>');
+            $form->addHTML('<figure><figcaption>' . $this->getLang('directions') . '</figcaption>');
             $form->addHTML($svg);
             $form->addHTML('</figure>');
-            $form->addHTML('<p>'.$this->getLang('verifynotice').'</p>');
+            $form->addHTML('<p>' . $this->getLang('verifynotice') . '</p>');
             $form->addTextInput('googleauth_verify', $this->getLang('verifymodule'));
         } else {
             $form->addHTML('<p>' . $this->getLang('passedsetup') . '</p>');
@@ -52,9 +51,9 @@ class action_plugin_twofactorgoogleauth extends Provider
         global $INPUT;
 
         $otp = $INPUT->str('googleauth_verify');
-        if(!$otp) return;
+        if (!$otp) return;
 
-        if($this->checkCode($otp)) {
+        if ($this->checkCode($otp)) {
             $this->settings->set('verified', true);
         }
     }
