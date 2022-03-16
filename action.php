@@ -1,6 +1,7 @@
 <?php
 
 use dokuwiki\Form\Form;
+use dokuwiki\plugin\twofactor\OtpField;
 use dokuwiki\plugin\twofactor\Provider;
 use dokuwiki\plugin\twofactorgoogleauth\QRCode;
 
@@ -37,7 +38,7 @@ class action_plugin_twofactorgoogleauth extends Provider
         $form->addHTML($svg);
         $form->addHTML('</figure>');
         $form->addHTML('<p>' . $this->getLang('verifynotice') . '</p>');
-        $form->addTextInput('googleauth_verify', $this->getLang('verifymodule'));
+        $form->addElement(new OtpField('googleauth_verify'));
 
         return $form;
     }
