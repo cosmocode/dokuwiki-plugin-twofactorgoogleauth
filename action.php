@@ -34,9 +34,11 @@ class action_plugin_twofactorgoogleauth extends Provider
         $url = 'otpauth://totp/' . rawurlencode($name) . '?secret=' . $secret;
         $svg = QRCode::svg($url);
 
-        $form->addHTML('<figure><figcaption>' . $this->getLang('directions') . '</figcaption>');
+        $form->addHTML('<figure><p>' . $this->getLang('directions') . '</p>');
         $form->addHTML($svg);
+        $form->addHTML('<figcaption><code>'.$secret.'</code></figcaption>');
         $form->addHTML('</figure>');
+
         $form->addHTML('<p>' . $this->getLang('verifynotice') . '</p>');
         $form->addElement(new OtpField('googleauth_verify'));
 
