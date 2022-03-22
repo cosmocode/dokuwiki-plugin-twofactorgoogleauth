@@ -1,0 +1,9 @@
+# This is a list of files that were present in previous releases
+# but were removed later. They should not exist in your installation.
+GoogleAuthenticator.php
+README.md
+conf/default.php
+conf/metadata.php
+helper.php
+lang/en/settings.php
+phpqrcode.php
